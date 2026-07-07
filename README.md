@@ -17,7 +17,43 @@ The app is designed to run from one computer on your local network and be opened
 - Generate local Pokemon data from PokeAPI for fast offline use after setup.
 - Responsive Pokedex-style interface for desktop and mobile.
 
-## Quick Start
+## Quick Start With Docker
+
+The recommended deployment is Docker Compose. It builds the app reproducibly, runs it on normal HTTP port `80`, and stores checklist progress on the host in `data/living-dex-state.json`.
+
+Start the app:
+
+```bash
+docker compose up -d
+```
+
+Open it on the host machine:
+
+```text
+http://localhost
+```
+
+Open it from another device on the same local network:
+
+```text
+http://HOST-IP
+```
+
+For the preferred hostname:
+
+```text
+http://livingdex
+```
+
+configure your router or local DNS server to point `livingdex` at the host computer's LAN IP address. See [Docker Deployment](docs/DOCKER_DEPLOYMENT.md) for setup details.
+
+Stop the app:
+
+```bash
+docker compose down
+```
+
+## Manual Quick Start
 
 Install dependencies:
 
@@ -52,6 +88,9 @@ npm run dev:api      # Shared API/static server for development
 npm run build        # Type-check and build production assets
 npm run serve:lan    # Serve an existing production build on LAN
 npm run shared:lan   # Build and serve the shared LAN app
+npm run docker:build # Build the Docker image
+npm run docker:up    # Convenience wrapper for docker compose up -d
+npm run docker:down  # Convenience wrapper for docker compose down
 npm run update:pokemon
 npm run update:pokedex
 ```
@@ -91,6 +130,7 @@ Checklist progress is stored by National Dex number, so existing tracked Pokemon
 ## Documentation
 
 - [Getting Started](docs/GETTING_STARTED.md)
+- [Docker Deployment](docs/DOCKER_DEPLOYMENT.md)
 - [Local Network Hosting](docs/LOCAL_NETWORK_HOSTING.md)
 - [Shared Sync](docs/SHARED_SYNC.md)
 - [PokeAPI Data](docs/POKEAPI_DATA.md)

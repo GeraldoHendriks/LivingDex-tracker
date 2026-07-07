@@ -22,6 +22,10 @@ function cleanText(value) {
   return value.replace(/[\n\f\r]+/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
+function speciesIdFromUrl(url) {
+  return Number(url.match(/pokemon-species\/(\d+)\//)?.[1]);
+}
+
 async function fetchJson(url) {
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Failed to fetch ${url}: ${response.status}`);
@@ -44,12 +48,49 @@ async function mapWithConcurrency(items, limit, mapper) {
   return results;
 }
 
-function chainNodeToNames(node) {
-  // Flatten branching evolution trees into readable paths for the detail drawer.
-  const current = titleCase(node.species.name);
-  if (!node.evolves_to.length) return [current];
+function formatEvolutionCondition(details) {
+  const labels = [];
 
-  return node.evolves_to.flatMap((child) => chainNodeToNames(child).map((chain) => `${current} -> ${chain}`));
+  if (details.min_level) labels.push(`Lv. ${details.min_level}`);
+  if (details.item) labels.push(`Use ${titleCase(details.item.name)}`);
+  if (details.held_item) labels.push(`Hold ${titleCase(details.held_item.name)}`);
+  if (details.known_move) labels.push(`Know ${titleCase(details.known_move.name)}`);
+  if (details.known_move_type) labels.push(`Know ${titleCase(details.known_move_type.name)} Move`);
+  if (details.location) labels.push(`At ${titleCase(details.location.name)}`);
+  if (details.min_happiness) labels.push(`Friendship ${details.min_happiness}`);
+  if (details.min_affection) labels.push(`Affection ${details.min_affection}`);
+  if (details.min_beauty) labels.push(`Beauty ${details.min_beauty}`);
+  if (details.time_of_day) labels.push(titleCase(details.time_of_day));
+  if (details.gender === 1) labels.push('Female');
+  if (details.gender === 2) labels.push('Male');
+  if (details.needs_overworld_rain) labels.push('Rain');
+  if (details.party_species) labels.push(`With ${titleCase(details.party_species.name)}`);
+  if (details.party_type) labels.push(`With ${titleCase(details.party_type.name)} Type`);
+  if (details.trade_species) labels.push(`Trade For ${titleCase(details.trade_species.name)}`);
+  if (details.turn_upside_down) labels.push('Turn Upside Down');
+  if (details.relative_physical_stats === 1) labels.push('Attack > Defense');
+  if (details.relative_physical_stats === 0) labels.push('Attack = Defense');
+  if (details.relative_physical_stats === -1) labels.push('Attack < Defense');
+
+  if (!labels.length && details.trigger?.name) labels.push(titleCase(details.trigger.name));
+
+  return labels.join(' + ');
+}
+
+function chainNodeToStages(node, condition) {
+  // Flatten branching evolution trees into clickable paths while preserving each transition condition.
+  const current = {
+    id: speciesIdFromUrl(node.species.url),
+    name: titleCase(node.species.name),
+    ...(condition ? { condition } : {}),
+  };
+
+  if (!node.evolves_to.length) return [[current]];
+
+  return node.evolves_to.flatMap((child) => {
+    const childCondition = formatEvolutionCondition(child.evolution_details[0] ?? {});
+    return chainNodeToStages(child, childCondition).map((chain) => [current, ...chain]);
+  });
 }
 
 function renderValue(value) {
@@ -80,13 +121,13 @@ async function buildDetails(summary) {
     abilities: pokemon.abilities.map((entry) => titleCase(entry.ability.name)),
     stats: Object.fromEntries(pokemon.stats.map((entry) => [entry.stat.name, entry.base_stat])),
     flavorText: cleanText(flavor),
-    evolutionChains: chainNodeToNames(evolutionChain.chain),
+    evolutionChains: chainNodeToStages(evolutionChain.chain),
   };
 }
 
 function renderDetailsFile(entries) {
   const rows = entries.map((entry) => `  ${entry.id}: ${renderValue(entry)},`);
-  return `export type PokemonDetail = {\n  id: number;\n  height: number;\n  weight: number;\n  sprite: string;\n  artwork: string;\n  abilities: string[];\n  stats: Record<string, number>;\n  flavorText: string;\n  evolutionChains: string[];\n};\n\nexport const pokemonDetails: Record<number, PokemonDetail> = {\n${rows.join('\n')}\n};\n`;
+  return `export type EvolutionStage = {\n  id: number;\n  name: string;\n  condition?: string;\n};\n\nexport type PokemonDetail = {\n  id: number;\n  height: number;\n  weight: number;\n  sprite: string;\n  artwork: string;\n  abilities: string[];\n  stats: Record<string, number>;\n  flavorText: string;\n  evolutionChains: EvolutionStage[][];\n};\n\nexport const pokemonDetails: Record<number, PokemonDetail> = {\n${rows.join('\n')}\n};\n`;
 }
 
 async function buildTypeChart() {
@@ -120,7 +161,7 @@ function renderTypeChartFile(entries) {
 async function main() {
   const speciesList = await fetchJson(speciesUrl);
   const summaries = speciesList.results
-    .map((summary) => ({ ...summary, id: Number(summary.url.match(/pokemon-species\/(\d+)\//)?.[1]) }))
+    .map((summary) => ({ ...summary, id: speciesIdFromUrl(summary.url) }))
     .filter((summary) => Number.isInteger(summary.id))
     .sort((a, b) => a.id - b.id);
 

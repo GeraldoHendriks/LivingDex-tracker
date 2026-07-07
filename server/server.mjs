@@ -118,6 +118,13 @@ function sendNotFound(response) {
   response.end('Not found');
 }
 
+function staticHeaders(filePath) {
+  return {
+    'Cache-Control': filePath.endsWith('index.html') ? 'no-cache' : 'public, max-age=31536000, immutable',
+    'Content-Type': contentTypes[extname(filePath)] || 'application/octet-stream',
+  };
+}
+
 async function serveStatic(request, response) {
   const url = new URL(request.url || '/', `http://${request.headers.host}`);
   const requestedPath = url.pathname === '/' ? '/index.html' : url.pathname;
@@ -131,7 +138,7 @@ async function serveStatic(request, response) {
       // Unknown frontend routes fall back to the React entrypoint.
       const indexPath = join(distDir, 'index.html');
       await readFile(indexPath);
-      response.writeHead(200, { 'Content-Type': contentTypes['.html'] });
+      response.writeHead(200, staticHeaders(indexPath));
       createReadStream(indexPath).pipe(response);
     } catch {
       sendNotFound(response);
@@ -139,9 +146,7 @@ async function serveStatic(request, response) {
     return;
   }
 
-  response.writeHead(200, {
-    'Content-Type': contentTypes[extname(filePath)] || 'application/octet-stream',
-  });
+  response.writeHead(200, staticHeaders(filePath));
   createReadStream(filePath).pipe(response);
 }
 

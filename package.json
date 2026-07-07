@@ -24,6 +24,9 @@
     "preview:lan": "vite preview --host 0.0.0.0",
     "serve:lan": "node server/server.mjs",
     "shared:lan": "npm run build && node server/server.mjs",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
     "update:pokemon": "node scripts/update-pokemon.mjs",
     "update:pokedex": "npm run update:pokemon && node scripts/update-pokedex-details.mjs"
   },

@@ -1,0 +1,23 @@
+services:
+  livingdex:
+    build: .
+    container_name: livingdex
+    restart: unless-stopped
+    environment:
+      REBUILD_FRONTEND_ON_START: "true"
+    ports:
+      - "80:4173"
+    volumes:
+      - ./data:/app/data
+      - ./src:/app/src:ro
+      - ./server:/app/server:ro
+      - ./index.html:/app/index.html:ro
+      - ./vite.config.ts:/app/vite.config.ts:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./tsconfig.app.json:/app/tsconfig.app.json:ro
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:4173/api/state').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

@@ -1,0 +1,12 @@
+.git/
+.gitignore
+Dockerfile
+compose.yaml
+node_modules/
+dist/
+data/
+npm-debug.log*
+*.log
+.DS_Store
+.idea/
+.vscode/

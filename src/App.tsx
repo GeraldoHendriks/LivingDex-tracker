@@ -446,10 +446,29 @@ function App() {
                 ))}
               </article>
 
-              <article>
+              <article className="evolution-card">
                 <h3>Evolution Chain</h3>
                 {selectedDetails.evolutionChains.map((chain) => (
-                  <p key={chain}>{chain}</p>
+                  <div className="evolution-chain" key={chain.map((stage) => stage.id).join('-')}>
+                    {chain.map((stage, index) => {
+                      const details = pokemonDetails[stage.id];
+
+                      return (
+                        <div className="evolution-step" key={`${stage.id}-${index}`}>
+                          {stage.condition ? <span className="evolution-condition">{stage.condition}</span> : null}
+                          <button
+                            type="button"
+                            className={stage.id === selectedPokemon.id ? 'evolution-stage active' : 'evolution-stage'}
+                            onClick={() => setSelectedPokemonId(stage.id)}
+                          >
+                            {details?.sprite ? <img src={details.sprite} alt="" loading="lazy" /> : null}
+                            <span className="dex-number">#{stage.id.toString().padStart(3, '0')}</span>
+                            <strong>{stage.name}</strong>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
                 ))}
               </article>
             </div>
