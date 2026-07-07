@@ -1,0 +1,41 @@
+{
+  "name": "living-dex-tracker",
+  "private": true,
+  "version": "0.1.0",
+  "description": "A local-network Pokedex and shared living dex tracker with generated PokeAPI data.",
+  "license": "MIT",
+  "type": "module",
+  "keywords": [
+    "pokedex",
+    "pokemon",
+    "living-dex",
+    "local-network",
+    "pokeapi"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "vite",
+    "dev:lan": "vite --host 0.0.0.0",
+    "dev:api": "node server/server.mjs",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "preview:lan": "vite preview --host 0.0.0.0",
+    "serve:lan": "node server/server.mjs",
+    "shared:lan": "npm run build && node server/server.mjs",
+    "update:pokemon": "node scripts/update-pokemon.mjs",
+    "update:pokedex": "npm run update:pokemon && node scripts/update-pokedex-details.mjs"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.6.3",
+    "vite": "^6.4.3"
+  }
+}
