@@ -671,6 +671,7 @@ h1 {
 }
 
 .detail-grid article {
+  min-width: 0;
   padding: 16px;
   border-radius: 18px;
   color: #dce9f5;
@@ -695,6 +696,7 @@ h1 {
 
 .evolution-card {
   grid-column: span 2;
+  overflow: hidden;
 }
 
 .stat-row {
@@ -883,6 +885,32 @@ h1 {
   .evolution-condition {
     max-width: 118px;
     font-size: 0.66rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .evolution-chain {
+    flex-direction: column;
+    align-items: stretch;
+    overflow-x: visible;
+  }
+
+  .evolution-step {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .evolution-step:has(.evolution-condition) {
+    justify-content: space-between;
+  }
+
+  .evolution-condition {
+    flex: 1 1 auto;
+    max-width: none;
+  }
+
+  .evolution-stage {
+    flex: 0 0 104px;
   }
 }
 

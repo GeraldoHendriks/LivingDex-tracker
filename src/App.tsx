@@ -174,8 +174,12 @@ function App() {
     [],
   );
 
-  const ownedCount = pokemon.filter((entry) => owned[entry.id]).length;
-  const percentComplete = Math.round((ownedCount / pokemon.length) * 100);
+  const progressPokemon =
+    generationFilter === 'all'
+      ? pokemon
+      : pokemon.filter((entry) => entry.generation.toString() === generationFilter);
+  const ownedCount = progressPokemon.filter((entry) => owned[entry.id]).length;
+  const percentComplete = Math.round((ownedCount / progressPokemon.length) * 100);
 
   const visiblePokemon = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -261,7 +265,7 @@ function App() {
             </div>
             <strong>{percentComplete}%</strong>
             <span>{ownedCount} owned</span>
-            <small>{pokemon.length - ownedCount} remaining</small>
+            <small>{progressPokemon.length - ownedCount} remaining</small>
             <div className="progress-bar" aria-hidden="true">
               <div style={{ width: `${percentComplete}%` }} />
             </div>
